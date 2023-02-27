@@ -20,7 +20,7 @@ public class Neuronal {
 
     public void getRows() {
         StringBuilder stringBuilder = new StringBuilder();
-        String key = "ROW-2019-24";
+        String key = "ROW-2018-01";
         addScoreStringBuilder(getScore(key.replace("ROW","VA")),stringBuilder);
         redis.getKeys(key).forEach(k -> {
             Arrays.asList(redis.getKey(k).split("\n")).forEach(r -> {
@@ -34,7 +34,6 @@ public class Neuronal {
 
     public void convertBet(String strBet, String key, StringBuilder stringBuilder) {
         try {
-
 
             String strSplit[] = strBet.split(",");
             addGameNr(strSplit[0], stringBuilder);
