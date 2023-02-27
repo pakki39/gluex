@@ -1,37 +1,37 @@
 package com.bkk.de.gluex;
 
-import org.apache.pdfbox.multipdf.Splitter;
-import org.apache.pdfbox.pdmodel.PDDocument;
-import org.apache.pdfbox.pdmodel.PDPage;
-import org.apache.pdfbox.text.PDFTextStripper;
 import org.springframework.beans.factory.InitializingBean;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-
-import java.io.*;
-import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
 
 @Component
 public class InitBean implements InitializingBean {
 
-    PDF pdf;
+    PDFTipps pdfTipps;
     Neuronal neuronal;
 
-    public InitBean(PDF pdf, Neuronal neuronal) {
-        this.pdf = pdf;
+    Excel excel;
+
+    @Autowired
+    public InitBean(PDFTipps pdfTipps, Neuronal neuronal, Excel excel) {
+        this.pdfTipps = pdfTipps;
         this.neuronal = neuronal;
+        this.excel = excel;
     }
 
     @Override
     public void afterPropertiesSet() throws Exception {
-        System.out.println("InitializingBean#afterPropertiesSet()");
-        pdf.getAllFiles("/home/bkk/gluex/pdf")
-                .forEach(f -> {
-                    System.out.println(f.getFileName());
-                    neuronal.insertTrainList(pdf.createScores(f));
-                });
+
+//        excel.read("/home/bkk/gluex/Auswahlwette1975.xlsx");
+        excel.readNewer("/home/bkk/gluex/AW_ab_2018.xlsx");
+
+//        neuronal.getRows();
+
+//        pdfTipps.getAllFiles("/home/bkk/gluex/pdf")
+//                .forEach(f -> {
+//                    System.out.println(f.getFileName());
+//                    pdfTipps.createScores(f);
+//                });
     }
 
 }

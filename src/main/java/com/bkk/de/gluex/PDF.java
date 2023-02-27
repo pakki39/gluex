@@ -3,6 +3,7 @@ package com.bkk.de.gluex;
 import org.apache.pdfbox.multipdf.Splitter;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.text.PDFTextStripper;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.io.*;
@@ -12,19 +13,18 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.*;
 
-@Component
-public class PDF {
+public abstract class PDF {
 
     Splitter splitter;
     List<String> coordinatesList;
-    String stringScores;
+    Redis redis;
 
-    public PDF() {
+
+    @Autowired
+    public PDF(Redis redis) {
+        this.redis = redis;
         this.splitter = new Splitter();
-        coordinatesList = new ArrayList<>();
-        coordinatesList.add("121,59,652,390");
-        coordinatesList.add("121,52,652,390");
-        coordinatesList.add("121,38,652,360");
+        this.coordinatesList = new ArrayList<>();
     }
 
     public Set<Path> getAllFiles(String dir) throws IOException {
@@ -48,9 +48,8 @@ public class PDF {
         }
     }
 
-    public String createScores(Path documentPath) {
+    public void createScores(Path documentPath) {
         split(documentPath);
-        return stringScores;
     }
 
     public void split(Path documentPath) {
@@ -80,7 +79,7 @@ public class PDF {
             PDFTextStripper pdfStripper = new PDFTextStripper();
             List<String> items = Arrays.asList(pdfStripper.getText(page).split("\n"));
             for (String str : items) {
-                if (str.startsWith("6aus45 Auswahlwette") || str.startsWith("Veranstaltung vom")) {
+                if (str.startsWith("6aus45 Auswahlwette") || str.startsWith("13er Ergebnistipp / 6aus45 Auswahltipp")) {
                     return true;
                 }
             }
@@ -92,14 +91,14 @@ public class PDF {
 
     private void runThroughCoordinatesList(Path file) {
         for (String str : coordinatesList) {
-            if (extractData(str)) {
+            if (extractData(str, file.getFileName())) {
                 return;
             }
         }
         System.out.println("ERROR " + file);
     }
 
-    private boolean extractData(String coordinates) {
+    private boolean extractData(String coordinates, Path filename) {
 
         try {
             Process p = Runtime.getRuntime().exec("java -jar /home/bkk/bin/tabula-1.0.5-jar-with-dependencies.jar -n -p 1 -a " + coordinates + " /tmp/gluex.pdf");
@@ -122,8 +121,8 @@ public class PDF {
                     corrections(stringBuilder);
                     writer = new BufferedWriter(new FileWriter(file));
                     writer.append(stringBuilder);
-//                    System.out.println(stringBuilder);
-                    stringScores = stringBuilder.toString();
+                    System.out.println(stringBuilder);
+                    redis.write("row_" + filename.getFileName(),stringBuilder.toString());
                 } finally {
                     if (writer != null) writer.close();
                 }
