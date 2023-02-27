@@ -13,18 +13,22 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.*;
 
-public abstract class PDF {
+@Component
+public class PDF {
 
     Splitter splitter;
     List<String> coordinatesList;
+    String stringScores;
     Redis redis;
-
 
     @Autowired
     public PDF(Redis redis) {
         this.redis = redis;
         this.splitter = new Splitter();
-        this.coordinatesList = new ArrayList<>();
+        coordinatesList = new ArrayList<>();
+        coordinatesList.add("121,59,652,390");
+        coordinatesList.add("121,52,652,390");
+        coordinatesList.add("121,38,652,360");
     }
 
     public Set<Path> getAllFiles(String dir) throws IOException {
@@ -66,10 +70,9 @@ public abstract class PDF {
                     runThroughCoordinatesList(documentPath.getFileName());
                     return;
                 }
-
             }
-            System.out.println("ERROR cannot find score page!");
-        } catch (IOException e) {
+            throw new Exception("ERROR cannot find score page!");
+        } catch (Exception e) {
             throw new RuntimeException(e);
         }
     }
@@ -79,7 +82,12 @@ public abstract class PDF {
             PDFTextStripper pdfStripper = new PDFTextStripper();
             List<String> items = Arrays.asList(pdfStripper.getText(page).split("\n"));
             for (String str : items) {
-                if (str.startsWith("6aus45 Auswahlwette") || str.startsWith("13er Ergebnistipp / 6aus45 Auswahltipp")) {
+                if (str.startsWith("13er-Wette / 6aus45 Auswahlwette")
+                        || str.startsWith("13er Ergebnistipp / 6aus45 Auswahltipp")
+                        || str.startsWith("13er Ergebniswette / 6aus45 Auswahlwette")
+                        || str.startsWith("6aus45 Auswahlwette 13er Ergebniswettrunde")
+                        || str.startsWith("6aus45 Auswahlwette 13:00 Uhr/13er Ergebniswette 15:00 Uhr")
+                        || str.startsWith("6aus45 Auswahlwette 13er Ergebniswette")) {
                     return true;
                 }
             }
@@ -90,15 +98,20 @@ public abstract class PDF {
     }
 
     private void runThroughCoordinatesList(Path file) {
-        for (String str : coordinatesList) {
-            if (extractData(str, file.getFileName())) {
-                return;
+        try {
+            for (String str : coordinatesList) {
+                if (extractData(str, file)) {
+                    return;
+                }
             }
+            throw new Exception("ERROR runThroughCoordinatesList -> " + file);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
         }
-        System.out.println("ERROR " + file);
+
     }
 
-    private boolean extractData(String coordinates, Path filename) {
+    private boolean extractData(String coordinates, Path path) {
 
         try {
             Process p = Runtime.getRuntime().exec("java -jar /home/bkk/bin/tabula-1.0.5-jar-with-dependencies.jar -n -p 1 -a " + coordinates + " /tmp/gluex.pdf");
@@ -122,7 +135,8 @@ public abstract class PDF {
                     writer = new BufferedWriter(new FileWriter(file));
                     writer.append(stringBuilder);
                     System.out.println(stringBuilder);
-                    redis.write("row_" + filename.getFileName(),stringBuilder.toString());
+                    stringScores = stringBuilder.toString();
+                    redis.write(Tools.getKey("ROW", path.getFileName().toString()), stringBuilder.toString());
                 } finally {
                     if (writer != null) writer.close();
                 }

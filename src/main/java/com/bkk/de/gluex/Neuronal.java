@@ -19,52 +19,36 @@ public class Neuronal {
     }
 
     public void getRows() {
-        redis.getKeys("row_*").forEach(k -> {
-            convertBet(redis.getKey(k), k);
-
+        StringBuilder stringBuilder = new StringBuilder();
+        String key = "ROW-2019-24";
+        addScoreStringBuilder(getScore(key.replace("ROW","VA")),stringBuilder);
+        redis.getKeys(key).forEach(k -> {
+            Arrays.asList(redis.getKey(k).split("\n")).forEach(r -> {
+                convertBet(r, k, stringBuilder);
+            });
+            String strResult = stringBuilder.toString().substring(0,stringBuilder.toString().length()-1);
+            redis.write(key.replace("ROW","RES"), strResult);
+            System.out.println("\n" + strResult);
         });
     }
 
-    public void convertBet(String strBet, String key) {
-        setKey(strBet, key);
+    public void convertBet(String strBet, String key, StringBuilder stringBuilder) {
+        try {
+
+
+            String strSplit[] = strBet.split(",");
+            addGameNr(strSplit[0], stringBuilder);
+            addScoreStringBuilder(addWeekDay(strSplit[1]), stringBuilder);
+
+            System.out.println(stringBuilder.toString());
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
     }
 
-    private void setKey(String strBet, String key) {
-        String year = Arrays.asList(key.split("_"))
-                .stream()
-                .filter(k -> k.charAt(0) == 50 && k.length() == 4)
-                .findFirst()
-                .orElse("");
-
-        if (year.isEmpty()) {
-            year = Arrays.asList(key.split("-"))
-                    .stream()
-                    .filter(k -> k.charAt(0) == 50 && k.replace(".pdf", "").length() == 4)
-                    .findFirst()
-                    .orElse("").replace(".pdf", "");
-        }
-
-        String week = Arrays.asList(key.split("_"))
-                .stream()
-                .filter(k -> k.substring(0, 2).equals("kw"))
-                .findFirst()
-                .orElse("").replace("kw", "").replace(".pdf", "");
-
-        if (week.isEmpty()) {
-            week = Arrays.asList(key.split("-"))
-                    .stream()
-                    .filter(k -> k.substring(0, 2).equals("nr"))
-                    .findFirst()
-                    .orElse("").replace("nr", "");
-        }
-
-        String newKey = "id_" + year + week;
-
-        System.out.println(key + " >>> " + newKey);
-
-        redis.write(newKey, strBet);
+    private String getScore(String key) {
+        return String.join(",", redis.getScore(key));
     }
-
 
     private void corrections(String stringScore) {
         String str = stringScore.split(",")[0];
@@ -74,16 +58,17 @@ public class Neuronal {
         stringScore.replaceFirst(stringScore.split(",")[0], str);
     }
 
-    private String addGameNr(String str) throws Exception {
+    private void addGameNr(String str, StringBuilder result) throws Exception {
         if (!isNumeric(str)) {
             String strSplit[] = str.split(" ");
             if (strSplit[0].length() < 3) {
-                return str;
+                addScoreStringBuilder(str,result);
+                return;
             } else {
                 throw new Exception("addGameNr" + str);
             }
         }
-        return str;
+        addScoreStringBuilder(str,result);
     }
 
     private String addWeekDay(String str) {
@@ -117,6 +102,11 @@ public class Neuronal {
             return false;
         }
         return true;
+    }
+
+    private void addScoreStringBuilder(String str, StringBuilder stringBuilder) {
+        stringBuilder.append(str);
+        stringBuilder.append(",");
     }
 
 

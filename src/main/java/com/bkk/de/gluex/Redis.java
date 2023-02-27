@@ -4,6 +4,8 @@ import org.springframework.stereotype.Component;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisPool;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
 
@@ -33,5 +35,37 @@ public class Redis {
         try (Jedis jedis = pool.getResource()) {
             return jedis.get(key);
         }
+    }
+
+    public List<String> getScore(String key) {
+        String strSplit[] = key.split("-");
+        int year = Integer.valueOf(strSplit[1]);
+        int week = Integer.valueOf(strSplit[2]);
+        if(week == 1) {
+            week = 53;
+            year = year - 1;
+        }
+
+        String score = getKey("VA-" + year + "-" + week);
+        while(score == null && week > 45) {
+            score = getKey("VA-" + year + "-" + week);
+            week--;
+        }
+
+        List<String> retList = new ArrayList<>();
+
+        if(score == null || score.isEmpty()) {
+            return retList;
+        }
+        String retSplit[] = score.split(",");
+
+        retList.add(retSplit[2]);
+        retList.add(retSplit[3]);
+        retList.add(retSplit[4]);
+        retList.add(retSplit[5]);
+        retList.add(retSplit[6]);
+        retList.add(retSplit[7]);
+
+        return retList;
     }
 }

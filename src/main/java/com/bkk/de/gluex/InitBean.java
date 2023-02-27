@@ -7,14 +7,14 @@ import org.springframework.stereotype.Component;
 @Component
 public class InitBean implements InitializingBean {
 
-    PDFTipps pdfTipps;
+    PDF pdf;
     Neuronal neuronal;
 
     Excel excel;
 
     @Autowired
-    public InitBean(PDFTipps pdfTipps, Neuronal neuronal, Excel excel) {
-        this.pdfTipps = pdfTipps;
+    public InitBean(PDF pdf, Neuronal neuronal, Excel excel) {
+        this.pdf = pdf;
         this.neuronal = neuronal;
         this.excel = excel;
     }
@@ -23,14 +23,14 @@ public class InitBean implements InitializingBean {
     public void afterPropertiesSet() throws Exception {
 
 //        excel.read("/home/bkk/gluex/Auswahlwette1975.xlsx");
-        excel.readNewer("/home/bkk/gluex/AW_ab_2018.xlsx");
+//        excel.readNewer("/home/bkk/gluex/AW_ab_2018.xlsx");
 
-//        neuronal.getRows();
+        neuronal.getRows();
 
-//        pdfTipps.getAllFiles("/home/bkk/gluex/pdf")
+//        pdf.getAllFiles("/home/bkk/gluex/pdf")
 //                .forEach(f -> {
 //                    System.out.println(f.getFileName());
-//                    pdfTipps.createScores(f);
+//                    pdf.createScores(f);
 //                });
     }
 
