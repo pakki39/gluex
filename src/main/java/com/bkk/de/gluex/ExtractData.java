@@ -24,10 +24,6 @@ public class ExtractData {
     public void extractTeams() {
         Set<String> allTeamNames = getAllTeamsFromGluex();
         allTeamNames.forEach(s -> System.out.println(s));
-        allTeamNames
-                .forEach(team -> copyTeams(team));
-        alistFaults
-                .forEach(System.out::println);
     }
 
     public Set<String> getAllTeamsFromGluex() {
@@ -59,35 +55,6 @@ public class ExtractData {
                             });
                 });
         return listTeamNames;
-    }
-
-    private void copyTeams(String team) {
-
-        getTeam(team);
-
-//        redis.getKeys("Team_*")
-    }
-
-    public void getTeam(String team) {
-        String teamKey = "TEAM_" + team.replaceAll(" ", "_");
-        String resTeam = getManualTeamId(team);
-        if(resTeam != null && !resTeam.isEmpty()){
-            System.out.println(teamKey + " <> " + getManualTeamId(team));
-            return;
-        }
-
-        resTeam = redis.getTeamNameId(team);
-
-        if(resTeam.isEmpty()){
-            alistFaults.add(team);
-//            throw new RuntimeException("no team id found!");
-        } else {
-            System.out.println(teamKey + " <> " + resTeam);
-        }
-    }
-
-    private String getManualTeamId(String team) {
-        return strMap.get(team);
     }
 
 }

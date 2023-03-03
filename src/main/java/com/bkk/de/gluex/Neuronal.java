@@ -95,35 +95,36 @@ public class Neuronal {
     }
 
     private String addPlacement(String str) {
-        try {
-            String strSplit[] = str.split("-");
-            Pattern p = Pattern.compile("\\(\\d+\\)");
-            Matcher m = p.matcher(strSplit[0]);
-            String pos1 = "100";
-            if (m.find()) {
-                pos1 = m.group();
-            }
-            String pos2 = "100";
-            m = p.matcher(strSplit[1]);
-            if (m.find()) {
-                pos2 = m.group();
-            }
-
-            String team1 = strSplit[0].replace(pos1, "").trim();
-            String team2 = strSplit[1].replace(pos2, "").trim();
-
-            String teamId1 = redis.getTeamId(team1);
-            String teamId2 = redis.getTeamId(team2);
-
-            if (teamId1 == null || teamId2 == null || pos1.isEmpty() || pos2.isEmpty()) {
-                throw new Exception("addPlacement: \n" + team1 + " " + teamId1 + " \n" + team2 + " " + teamId2 + " \n" + pos1 + " " + pos2);
-            }
-
-            return String.join(",", new ArrayList<>(List.of(teamId1, pos1.replace("(", "").replace(")", ""),
-                    teamId2, pos2.replace("(", "").replace(")", ""))));
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
+//        try {
+//            String strSplit[] = str.split("-");
+//            Pattern p = Pattern.compile("\\(\\d+\\)");
+//            Matcher m = p.matcher(strSplit[0]);
+//            String pos1 = "100";
+//            if (m.find()) {
+//                pos1 = m.group();
+//            }
+//            String pos2 = "100";
+//            m = p.matcher(strSplit[1]);
+//            if (m.find()) {
+//                pos2 = m.group();
+//            }
+//
+//            String team1 = strSplit[0].replace(pos1, "").trim();
+//            String team2 = strSplit[1].replace(pos2, "").trim();
+//
+//            String teamId1 = redis.getTeamId(team1);
+//            String teamId2 = redis.getTeamId(team2);
+//
+//            if (teamId1 == null || teamId2 == null || pos1.isEmpty() || pos2.isEmpty()) {
+//                throw new Exception("addPlacement: \n" + team1 + " " + teamId1 + " \n" + team2 + " " + teamId2 + " \n" + pos1 + " " + pos2);
+//            }
+//
+//            return String.join(",", new ArrayList<>(List.of(teamId1, pos1.replace("(", "").replace(")", ""),
+//                    teamId2, pos2.replace("(", "").replace(")", ""))));
+//        } catch (Exception e) {
+//            throw new RuntimeException(e);
+//        }
+        return "";
     }
 
     public static boolean isNumeric(String strNum) {

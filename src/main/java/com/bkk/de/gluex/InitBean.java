@@ -4,6 +4,11 @@ import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import java.time.DayOfWeek;
+import java.time.LocalDate;
+import java.time.temporal.IsoFields;
+import java.time.temporal.TemporalAdjusters;
+
 @Component
 public class InitBean implements InitializingBean {
 
@@ -50,7 +55,19 @@ public class InitBean implements InitializingBean {
 //        extractData.extractTeams();
 //        footballDB.loopPersistTeams();
 
-        fuzzyMatcher.start();
+        final long calendarWeek = 20;
+        LocalDate ltest = LocalDate.now();
+        ltest = ltest.withYear(2022);
+        LocalDate desiredDate = ltest
+                .with(IsoFields.WEEK_OF_WEEK_BASED_YEAR, calendarWeek)
+                .with(TemporalAdjusters.previousOrSame(DayOfWeek.SATURDAY));
+
+        System.out.println(desiredDate);
+
+        redis.getAllGamesWithTeam(fuzzyMatcher.getTeamId("AS Saint-Etienne").getValue(),"0522")
+                        .forEach(s -> System.out.println(s));
+
+
 
 
 //        pdf.getAllFiles("/home/bkk/gluex/pdf")
