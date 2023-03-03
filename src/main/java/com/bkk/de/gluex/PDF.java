@@ -134,9 +134,10 @@ public class PDF {
                     corrections(stringBuilder);
                     writer = new BufferedWriter(new FileWriter(file));
                     writer.append(stringBuilder);
-                    System.out.println(stringBuilder);
                     stringScores = stringBuilder.toString();
-                    redis.write(Tools.getKey("ROW", path.getFileName().toString()), stringBuilder.toString());
+                    String correctedStr = correctResultLine(stringBuilder.toString());
+                    System.out.println(correctedStr);
+                    redis.write(Tools.getKey("ROW", path.getFileName().toString()), correctedStr);
                 } finally {
                     if (writer != null) writer.close();
                 }
@@ -171,6 +172,19 @@ public class PDF {
         if (index > 0) {
             stringBuilder.replace(index, index + from.length(), to);
         }
+    }
+
+    private String correctResultLine(String str) {
+        Map<String,String> correctionList = new HashMap<>();
+        correctionList.put("14,MO,MalmFöo FtFo :( 5p)r i-v Haetlsingborgs IF (16),,7-2-1,-,4:1,-,UsUsNNnS,suNUnNnn",
+            "14,MO,Malmö FF (5) - Haetlsingborgs IF (16),,7-2-1,-,4:1,-,UsUsNNnS,suNUnNnn");
+
+        return correctionList
+                .entrySet()
+                .stream()
+                .map(entry -> str.replace(entry.getKey(),entry.getValue()))
+                .findFirst().get();
+
     }
 
 }
