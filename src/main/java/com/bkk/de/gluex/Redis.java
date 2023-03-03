@@ -143,4 +143,13 @@ public class Redis {
         }
         return "";
     }
+
+    public Set<String> getAllTeams() {
+        Set<String> retList = new HashSet<>();
+        getKeys("TEAM_*")
+                .forEach(key -> retList.add(getKey(key).replace("TEAM_","")));
+        return retList;
+    }
+
+
 }

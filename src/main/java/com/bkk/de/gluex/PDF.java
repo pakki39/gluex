@@ -175,15 +175,25 @@ public class PDF {
     }
 
     private String correctResultLine(String str) {
+
         Map<String,String> correctionList = new HashMap<>();
+
         correctionList.put("14,MO,MalmFöo FtFo :( 5p)r i-v Haetlsingborgs IF (16),,7-2-1,-,4:1,-,UsUsNNnS,suNUnNnn",
             "14,MO,Malmö FF (5) - Haetlsingborgs IF (16),,7-2-1,-,4:1,-,UsUsNNnS,suNUnNnn");
 
-        return correctionList
+        correctionList.put("37,SO,Stade Rennes FC (9) - AS Saint-Etienne (4) 1:1Ergebnis Smsit HC**,,2-4-4 1:1,2:0,sSN*uNs,,,sNUsSsnU",
+        "37,SO,Stade Rennes FC (9) - AS Saint-Etienne (4),,2-4-4,-,1:1,2:0,sSN*uNs,,,sNUsSsnU");
+
+        List<String> corrList = Arrays.asList(str);
+        correctionList
                 .entrySet()
                 .stream()
-                .map(entry -> str.replace(entry.getKey(),entry.getValue()))
-                .findFirst().get();
+                .forEach(entry -> {
+                    String repl = corrList.get(0).replace(entry.getKey(), entry.getValue());
+                    corrList.set(0,repl);
+                });
+
+        return corrList.get(0);
 
     }
 

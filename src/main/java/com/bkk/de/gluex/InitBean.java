@@ -18,9 +18,10 @@ public class InitBean implements InitializingBean {
     ExtractData extractData;
 
     Redis redis;
+    FuzzyMatcher fuzzyMatcher;
 
     @Autowired
-    public InitBean(PDF pdf, Neuronal neuronal, Excel excel, FootballDB footballDB, CSV csv, ExtractData extractData, Redis redis) {
+    public InitBean(PDF pdf, Neuronal neuronal, Excel excel, FootballDB footballDB, CSV csv, ExtractData extractData, Redis redis, FuzzyMatcher fuzzyMatcher) {
         this.pdf = pdf;
         this.neuronal = neuronal;
         this.excel = excel;
@@ -28,6 +29,7 @@ public class InitBean implements InitializingBean {
         this.csv = csv;
         this.extractData = extractData;
         this.redis = redis;
+        this.fuzzyMatcher = fuzzyMatcher;
     }
 
     @Override
@@ -48,11 +50,14 @@ public class InitBean implements InitializingBean {
 //        extractData.extractTeams();
 //        footballDB.loopPersistTeams();
 
-        pdf.getAllFiles("/home/bkk/gluex/pdf")
-                .forEach(f -> {
-                    System.out.println(f.getFileName());
-                    pdf.createScores(f);
-                });
+        fuzzyMatcher.start();
+
+
+//        pdf.getAllFiles("/home/bkk/gluex/pdf")
+//                .forEach(f -> {
+//                    System.out.println(f.getFileName());
+//                    pdf.createScores(f);
+//                });
     }
 
 }

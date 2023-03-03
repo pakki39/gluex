@@ -30,7 +30,7 @@ public class ExtractData {
                 .forEach(System.out::println);
     }
 
-    private Set<String> getAllTeamsFromGluex() {
+    public Set<String> getAllTeamsFromGluex() {
         Set<String> listTeamNames = new HashSet<>();
         redis.getKeys("ROW-*")
                 .forEach(key -> {
@@ -39,14 +39,20 @@ public class ExtractData {
                                 if(l.contains("Ersatzauslosung")) {
                                     return;
                                 }
-                                if(l.contains("MalmFöo")) {
+                                if(l.contains("Seattle Sounders FC")) {
                                     System.out.println(l);
                                 }
                                 List<String> list = Arrays.asList(l.split(","));
                                 if(list.get(0).length() > 2) {
+                                    if(list.get(1).contains("/")) {
+                                        return;
+                                    }
                                     Tools.extractTeamNames(list.get(1))
                                                     .forEach(s -> listTeamNames.add(s));
                                 } else {
+                                    if(list.get(2).contains("/")) {
+                                        return;
+                                    }
                                     Tools.extractTeamNames(list.get(2))
                                             .forEach(s -> listTeamNames.add(s));
                                 }
@@ -57,12 +63,7 @@ public class ExtractData {
 
     private void copyTeams(String team) {
 
-        List<String> listStr = Tools.extractTeamNames(team);
-        if(listStr.size() != 2) {
-            throw new RuntimeException("Number of Teams != 2");
-        }
-
-        listStr.forEach(l -> getTeam(l));
+        getTeam(team);
 
 //        redis.getKeys("Team_*")
     }

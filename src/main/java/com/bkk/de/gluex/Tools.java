@@ -57,6 +57,8 @@ public class Tools {
 
         teamsStr = teamsStr.replace("\u2013","-");
         teamsStr = teamsStr.replace("*","");
+        teamsStr = teamsStr.replace("fi eld","field");
+        teamsStr = teamsStr.replace("Fi eld","Field");
         teamsStr = teamsStr.trim();
 
         if(teamsStr.contains(" - ")) {
@@ -77,7 +79,7 @@ public class Tools {
         if (m.find()) {
             return str.replace(m.group(), "").replace("*","").trim();
         }
-        return str;
+        return str.trim();
     }
 
 
