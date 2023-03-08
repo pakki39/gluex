@@ -1,7 +1,6 @@
 package com.bkk.de.gluex;
 
 import com.opencsv.CSVReader;
-import org.apache.commons.io.FileUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -12,9 +11,14 @@ import java.nio.file.Paths;
 import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
-import java.util.*;
-import java.util.regex.Pattern;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Locale;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
+
+import static org.apache.commons.lang3.ArrayUtils.add;
 
 @Component
 public class CSV {
@@ -34,7 +38,7 @@ public class CSV {
 
         try {
             Path path = Paths.get("/home/bkk/gluex/football-data/D1.csv");
-            readLineByLine(path).forEach(str -> System.out.println(str));
+            readLineByLine(path).forEach(System.out::println);
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
@@ -94,8 +98,8 @@ public class CSV {
 
                     System.out.println(resultStr);
 
-                    String teamHome = resultStr.get(2).replaceAll(" ", "_").replaceAll("'","");
-                    String teamGuest = resultStr.get(3).replaceAll(" ", "_").replaceAll("'","");
+                    String teamHome = resultStr.get(2).replaceAll(" ", "_").replaceAll("'", "");
+                    String teamGuest = resultStr.get(3).replaceAll(" ", "_").replaceAll("'", "");
 
                     String key = "GAME_" + teamHome + "-" + teamGuest + "-" + resultStr.get(1);
                     key = key.replaceAll("'", "");
@@ -124,6 +128,67 @@ public class CSV {
         String d = targetFormatter.format(java.sql.Date.valueOf(dateTime));
 
         return d;
+    }
+
+    public void readCsv() {
+        try {
+            List<String> inputStringList = new ArrayList<>();
+            inputStringList.add("der Ersatzauslosung");
+            inputStringList.add("EM-Qualifikation");
+            inputStringList.add("WM-Qualifikation");
+            inputStringList.add("EM-Q.");
+            inputStringList.add("Freundschafts-Länderspiel");
+            inputStringList.add("FA-Cup Viertelfinale");
+            inputStringList.add("FA-Cup Viertelfinale");
+//            inputStringList.add("Sieger ");
+            List<List<String[]>> list = new ArrayList<>();
+            AtomicInteger atomicInteger = new AtomicInteger(0);
+            Tools.getAllFilesFromDir("/home/bkk/gluex/side10/csv")
+                    .forEach(p -> {
+                        try {
+
+//                            List<String[]> filename = new ArrayList<>();
+//                            filename.add(new String[]{p.getFileName().toString()});
+//                            list.add(0, filename);
+                            list.add(readLineByLine(p));
+                            list.get(list.size()-1).add(new String[]{p.getFileName().toString()});
+
+                        } catch (Exception e) {
+                            throw new RuntimeException(e);
+                        }
+                    });
+            list
+                    .stream()
+                    .filter(f -> {
+                        List<String> str = f.stream().map(a -> Arrays.toString(a)).toList();
+                        String res = str.stream()
+                                .map(String::valueOf)
+                                .collect(Collectors.joining(","));
+                        return inputStringList.stream().noneMatch(l -> res.contains(l));
+                    })
+                    .forEach(stringArray -> {
+                        atomicInteger.set(0);
+                        stringArray
+                                .stream()
+                                .filter(t -> Tools.isNumeric(t[0]))
+                                .filter(t -> !t[1].isEmpty())
+                                .filter(t -> !Tools.isNumeric(t[1]))
+                                .filter(t -> t.length > 25)
+                                .filter(t -> !Tools.isNumeric(t[1]))
+                                .filter(t -> !t[1].equals(""))
+                                .forEach(t -> {
+
+                                    String result = Arrays.toString(t).replace("\n", "").replace("[", "").replace("]", "");
+                                    String key = Tools.getKey("GLUEX", stringArray.get(stringArray.size()-1)[0]).replace(".csv","-" + atomicInteger.addAndGet(1));
+                                    System.out.println(key + " <> " + atomicInteger.get() + " <> " + t.length + " <> " + result);
+                                    redis.write(key, result);
+                                });
+
+                    });
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+
     }
 
 }

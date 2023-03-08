@@ -31,7 +31,7 @@ public class FuzzyMatcher {
                 .forEach(s -> {
                     AbstractMap.SimpleEntry<Integer, String> result = getTeamId(s);
 //                    System.out.println(s + " <> " + result.getValue());
-                    if (result.getKey() > 74) {
+                    if (result.getKey() > 65) {
                         System.out.println(s + " >>>>>>> " + result.getValue());
                     }
                 });

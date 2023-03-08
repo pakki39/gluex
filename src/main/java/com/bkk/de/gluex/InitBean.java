@@ -4,16 +4,11 @@ import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import java.time.DayOfWeek;
-import java.time.LocalDate;
-import java.time.temporal.IsoFields;
-import java.time.temporal.TemporalAdjusters;
-
 @Component
 public class InitBean implements InitializingBean {
 
     PDF pdf;
-    Neuronal neuronal;
+    CreateData createData;
 
     Excel excel;
 
@@ -26,9 +21,9 @@ public class InitBean implements InitializingBean {
     FuzzyMatcher fuzzyMatcher;
 
     @Autowired
-    public InitBean(PDF pdf, Neuronal neuronal, Excel excel, FootballDB footballDB, CSV csv, ExtractData extractData, Redis redis, FuzzyMatcher fuzzyMatcher) {
+    public InitBean(PDF pdf, CreateData createData, Excel excel, FootballDB footballDB, CSV csv, ExtractData extractData, Redis redis, FuzzyMatcher fuzzyMatcher) {
         this.pdf = pdf;
-        this.neuronal = neuronal;
+        this.createData = createData;
         this.excel = excel;
         this.footballDB = footballDB;
         this.csv = csv;
@@ -43,7 +38,9 @@ public class InitBean implements InitializingBean {
 //        excel.read("/home/bkk/gluex/Auswahlwette1975.xlsx");
 //        excel.readNewer("/home/bkk/gluex/AW_ab_2018.xlsx");
 
-//        neuronal.getRows();
+//        createData.createData();
+
+//        fuzzyMatcher.start();
 
 //        csv.importFootballData();
 //        redis.getTeamNameId("Manchester City");
@@ -52,29 +49,35 @@ public class InitBean implements InitializingBean {
 //        redis.getTeamNameId("Borussia Dortmund");
 //        redis.getTeamNameId("Borussia Mönchengladbach");
 //        redis.getTeamNameId("CFC Genua 1893");
+
+
 //        extractData.extractTeams();
+
+
 //        footballDB.loopPersistTeams();
 
-        final long calendarWeek = 20;
-        LocalDate ltest = LocalDate.now();
-        ltest = ltest.withYear(2022);
-        LocalDate desiredDate = ltest
-                .with(IsoFields.WEEK_OF_WEEK_BASED_YEAR, calendarWeek)
-                .with(TemporalAdjusters.previousOrSame(DayOfWeek.SATURDAY));
+//        final long calendarWeek = 20;
+//        LocalDate ltest = LocalDate.now();
+//        ltest = ltest.withYear(2022);
+//        LocalDate desiredDate = ltest
+//                .with(IsoFields.WEEK_OF_WEEK_BASED_YEAR, calendarWeek)
+//                .with(TemporalAdjusters.previousOrSame(DayOfWeek.SATURDAY));
+//
+//        System.out.println(desiredDate);
+//
+//        redis.getAllGamesWithTeam(fuzzyMatcher.getTeamId("AS Saint-Etienne").getValue(),"0522")
+//                        .forEach(s -> System.out.println(s));
 
-        System.out.println(desiredDate);
-
-        redis.getAllGamesWithTeam(fuzzyMatcher.getTeamId("AS Saint-Etienne").getValue(),"0522")
-                        .forEach(s -> System.out.println(s));
+//    createData.improveDataQuality();
 
 
-
-
-//        pdf.getAllFiles("/home/bkk/gluex/pdf")
+//        Tools.getAllFilesFromDir("/home/bkk/gluex/pdf")
 //                .forEach(f -> {
 //                    System.out.println(f.getFileName());
-//                    pdf.createScores(f);
+//                    pdf.scanGluexPDF(f);
 //                });
+
+        csv.readCsv();
     }
 
 }

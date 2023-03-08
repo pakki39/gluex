@@ -16,7 +16,15 @@
     <properties>
         <java.version>17</java.version>
     </properties>
+    <repositories>
+
+    </repositories>
     <dependencies>
+
+
+        <!-- https://mvnrepository.com/artifact/com.aspose.pdf/aspose-pdf-jdk16 -->
+
+
         <!-- https://mvnrepository.com/artifact/me.xdrop/fuzzywuzzy -->
         <dependency>
             <groupId>me.xdrop</groupId>
@@ -64,6 +72,11 @@
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-test</artifactId>
             <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.luhuiguo</groupId>
+            <artifactId>aspose-pdf</artifactId>
+            <version>23.1</version>
         </dependency>
     </dependencies>
 

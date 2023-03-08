@@ -37,6 +37,12 @@ public class Redis {
         }
     }
 
+    public long deleteKey(String key) {
+        try (Jedis jedis = pool.getResource()) {
+            return jedis.del(key);
+        }
+    }
+
     public List<String> getScore(String key) {
         String strSplit[] = key.split("-");
         int year = Integer.valueOf(strSplit[1]);
@@ -81,6 +87,22 @@ public class Redis {
                 .stream()
                 .toList();
 
+    }
+
+    public String getGluexTeamId(String team) {
+        return getKey("TEAM_GLUEX_" + team.replace(" ","_"));
+    }
+
+    public void showAllGamesFromGluex() {
+        getKeys("GLUEX-*")
+                .forEach(k -> {
+                    System.out.println(getKey(k));
+                });
+    }
+
+    public static void main(String[] args) {
+        Redis redis = new Redis();
+        redis.showAllGamesFromGluex();
     }
 
 

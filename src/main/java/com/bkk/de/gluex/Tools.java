@@ -2,10 +2,12 @@ package com.bkk.de.gluex;
 
 import org.springframework.stereotype.Component;
 
-import java.util.Arrays;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Set;
+import java.io.IOException;
+import java.nio.file.DirectoryStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -82,5 +84,28 @@ public class Tools {
         return str.trim();
     }
 
+    public static boolean isNumeric(String strNum) {
+        if (strNum == null) {
+            return false;
+        }
+        try {
+            double d = Double.parseDouble(strNum);
+        } catch (NumberFormatException nfe) {
+            return false;
+        }
+        return true;
+    }
+
+    public static Set<Path> getAllFilesFromDir(String dir) throws IOException {
+        Set<Path> fileSet = new HashSet<>();
+        try (DirectoryStream<Path> stream = Files.newDirectoryStream(Paths.get(dir))) {
+            for (Path path : stream) {
+                if (!Files.isDirectory(path)) {
+                    fileSet.add(path);
+                }
+            }
+        }
+        return fileSet;
+    }
 
 }
