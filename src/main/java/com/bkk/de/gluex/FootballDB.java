@@ -192,7 +192,7 @@ public class FootballDB {
             System.out.println(str);
             Integer teamId = (Integer) ((JSONObject) str).get("teamId");
             String teamName = (String) ((JSONObject) str).get("teamName");
-            String key = "TEAM_" + teamName.trim().replaceAll(" ", "_").replaceAll("'","");
+            String key = "TEAM-" + teamName.trim().replaceAll(" ", "_").replaceAll("'","");
             redis.write(key, String.valueOf(teamId));
             System.out.println(key + " " + teamId);
         });

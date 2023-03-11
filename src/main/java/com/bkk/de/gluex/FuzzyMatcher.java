@@ -42,7 +42,7 @@ public class FuzzyMatcher {
         TreeMap<Integer, String> treeMap = new TreeMap<>();
         compareStrList
                 .forEach(s -> treeMap.put(FuzzySearch.ratio(s, str), s));
-        return new AbstractMap.SimpleEntry<>(treeMap.lastEntry().getKey(), "TEAM_" + treeMap.lastEntry().getValue());
+        return new AbstractMap.SimpleEntry<>(treeMap.lastEntry().getKey(), "TEAM-" + treeMap.lastEntry().getValue());
     }
 
     private void fill_compareStrList() {

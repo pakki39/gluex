@@ -77,13 +77,13 @@ public class Redis {
 
     public Set<String> getAllTeams() {
         Set<String> retList = new HashSet<>();
-        getKeys("TEAM_*")
+        getKeys("TEAM-*")
                 .forEach(key -> retList.add(getKey(key)));
         return retList;
     }
 
     public List<String> getAllGamesWithTeam(String team, String date) {
-        return getKeys("GAME_*" + team.replace("TEAM_","") + "*" + date + "*")
+        return getKeys("GAME_*" + team.replace("TEAM-","") + "*" + date + "*")
                 .stream()
                 .toList();
 

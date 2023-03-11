@@ -1,24 +1,21 @@
 package com.bkk.de.gluex;
 
 import com.opencsv.CSVReader;
+import lombok.SneakyThrows;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.io.*;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Locale;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
-
-import static org.apache.commons.lang3.ArrayUtils.add;
 
 @Component
 public class CSV {
@@ -28,10 +25,13 @@ public class CSV {
     DateTimeFormatter formatter8 = DateTimeFormatter.ofPattern("dd/MM/yy", Locale.ENGLISH);
     DateTimeFormatter formatter10 = DateTimeFormatter.ofPattern("dd/MM/yyyy", Locale.ENGLISH);
     SimpleDateFormat targetFormatter = new SimpleDateFormat("ddMMyy");
+    int teamCounter;
+    List<String> rejectStringList = new ArrayList<>();
 
     @Autowired
     public CSV(Redis redis) {
         this.redis = redis;
+        teamCounter = 0;
     }
 
     public void read() {
@@ -57,10 +57,9 @@ public class CSV {
         List<String[]> list = new ArrayList<>();
         try (Reader reader = new BufferedReader(
                 new InputStreamReader(
-                        new FileInputStream(filePath.toFile().getAbsoluteFile()), "UTF8"))) {
+                        new FileInputStream(filePath.toFile().getAbsoluteFile()), StandardCharsets.UTF_8))) {
             try (CSVReader csvReader = new CSVReader(reader)) {
                 String[] line;
-                StringBuilder stringBuilder = new StringBuilder();
                 while ((line = csvReader.readNext()) != null) {
                     list.add(line);
                 }
@@ -69,7 +68,8 @@ public class CSV {
         return list;
     }
 
-    public void importFootballData() throws Exception {
+    @SneakyThrows
+    public void importFootballData() {
         Path dir = Paths.get("/home/bkk/gluex/football-data/");
         Files.walk(dir)
                 .filter(p -> !p.toFile().isDirectory())
@@ -108,12 +108,20 @@ public class CSV {
 //                        throw new RuntimeException("result too short!");
 //                    }
 
-                    System.out.println("TEAM_" + teamHome);
-                    System.out.println("TEAM_" + teamGuest);
+                    System.out.println("TEAM-" + teamHome);
+                    System.out.println("TEAM-" + teamGuest);
                     redis.write(key, String.join(",", resultStr));
-                    redis.write("TEAM_" + teamHome, teamHome);
-                    redis.write("TEAM_" + teamGuest, teamGuest);
+                    redis.write("TEAM-" + teamHome, teamHome + "," + setTeamId("TEAM-" + teamHome));
+                    redis.write("TEAM-" + teamGuest, teamGuest + "," + setTeamId("TEAM-" + teamGuest));
                 });
+    }
+
+    private int setTeamId(String teamName) {
+        if (redis.getKey(teamName) == null) {
+            return ++teamCounter;
+        } else {
+            return Integer.parseInt(redis.getKey(teamName).split(",")[1]);
+        }
     }
 
     public String formatStringToDate(String str) {
@@ -125,34 +133,32 @@ public class CSV {
             dateTime = LocalDate.parse(str, formatter10);
         }
 
-        String d = targetFormatter.format(java.sql.Date.valueOf(dateTime));
-
-        return d;
+        assert dateTime != null;
+        return targetFormatter.format(java.sql.Date.valueOf(dateTime));
     }
 
-    public void readCsv() {
+
+    private void fillRejectStringList() {
+        if (rejectStringList.isEmpty()) {
+            rejectStringList.add("der Ersatzauslosung");
+            rejectStringList.add("Finale");
+            rejectStringList.add("finale");
+            rejectStringList.add("Qualifikation");
+            rejectStringList.add("DFB-Pokal");
+            rejectStringList.add("UEFA Nations League");
+        }
+    }
+
+    public void parseSide10FromGluex() {
         try {
-            List<String> inputStringList = new ArrayList<>();
-            inputStringList.add("der Ersatzauslosung");
-            inputStringList.add("EM-Qualifikation");
-            inputStringList.add("WM-Qualifikation");
-            inputStringList.add("EM-Q.");
-            inputStringList.add("Freundschafts-Länderspiel");
-            inputStringList.add("FA-Cup Viertelfinale");
-            inputStringList.add("FA-Cup Viertelfinale");
-//            inputStringList.add("Sieger ");
+            fillRejectStringList();
             List<List<String[]>> list = new ArrayList<>();
             AtomicInteger atomicInteger = new AtomicInteger(0);
             Tools.getAllFilesFromDir("/home/bkk/gluex/side10/csv")
                     .forEach(p -> {
                         try {
-
-//                            List<String[]> filename = new ArrayList<>();
-//                            filename.add(new String[]{p.getFileName().toString()});
-//                            list.add(0, filename);
                             list.add(readLineByLine(p));
-                            list.get(list.size()-1).add(new String[]{p.getFileName().toString()});
-
+                            list.get(list.size() - 1).add(new String[]{p.getFileName().toString()});
                         } catch (Exception e) {
                             throw new RuntimeException(e);
                         }
@@ -160,11 +166,11 @@ public class CSV {
             list
                     .stream()
                     .filter(f -> {
-                        List<String> str = f.stream().map(a -> Arrays.toString(a)).toList();
+                        List<String> str = f.stream().map(Arrays::toString).toList();
                         String res = str.stream()
                                 .map(String::valueOf)
                                 .collect(Collectors.joining(","));
-                        return inputStringList.stream().noneMatch(l -> res.contains(l));
+                        return rejectStringList.stream().noneMatch(res::contains);
                     })
                     .forEach(stringArray -> {
                         atomicInteger.set(0);
@@ -176,14 +182,19 @@ public class CSV {
                                 .filter(t -> t.length > 25)
                                 .filter(t -> !Tools.isNumeric(t[1]))
                                 .filter(t -> !t[1].equals(""))
-                                .forEach(t -> {
-
-                                    String result = Arrays.toString(t).replace("\n", "").replace("[", "").replace("]", "");
-                                    String key = Tools.getKey("GLUEX", stringArray.get(stringArray.size()-1)[0]).replace(".csv","-" + atomicInteger.addAndGet(1));
-                                    System.out.println(key + " <> " + atomicInteger.get() + " <> " + t.length + " <> " + result);
-                                    redis.write(key, result);
+                                .filter(t -> rejectStringList.stream().noneMatch(l -> Arrays.stream(t).map(String::valueOf).collect(Collectors.joining(",")).contains(l)))
+                                .map(t -> Arrays.stream(t)
+                                        .filter(s -> !s.isEmpty())
+                                        .filter(s -> !s.trim().equals("*") && !s.trim().equals("**"))
+                                        .map(m -> m.trim())
+                                        .collect(Collectors.joining(","))).toList()
+                                .forEach(s -> {
+                                    String[] counter = s.split(",");
+                                    String key = Tools.getKey("GLUEX", stringArray.get(stringArray.size() - 1)[0]).replace(".csv", "-" + atomicInteger.addAndGet(1));
+                                    String extractedStr = String.join(",",Arrays.copyOf(counter, 9));
+                                    System.out.println(key + " <> " + atomicInteger.get() + " <> " + extractedStr);
+                                    redis.write(key, extractedStr);
                                 });
-
                     });
         } catch (IOException e) {
             throw new RuntimeException(e);

@@ -45,7 +45,7 @@ public class Tools {
 
         String newKey = prefix + "-" + year + "-" + week;
 
-        System.out.println("KEY: " + newKey);
+//        System.out.println("KEY: " + newKey);
 
         return newKey;
     }

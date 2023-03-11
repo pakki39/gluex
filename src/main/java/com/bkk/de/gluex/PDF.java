@@ -54,6 +54,19 @@ public class PDF {
         }
     }
 
+    public void scanAllGluexPDFinDir() {
+        try {
+            Tools.getAllFilesFromDir("/home/bkk/gluex/pdf")
+            .forEach(f -> {
+                System.out.println(f.getFileName());
+                scanGluexPDF(f);
+            });
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+
+    }
+
     public void scanGluexPDF(Path documentPath) {
         split(documentPath);
     }

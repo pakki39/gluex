@@ -38,18 +38,11 @@ public class InitBean implements InitializingBean {
 //        excel.read("/home/bkk/gluex/Auswahlwette1975.xlsx");
 //        excel.readNewer("/home/bkk/gluex/AW_ab_2018.xlsx");
 
-//        createData.createData();
+        createData.createData();
 
 //        fuzzyMatcher.start();
 
 //        csv.importFootballData();
-//        redis.getTeamNameId("Manchester City");
-//        redis.getTeamNameId("Manchester United");
-//extractData.getTeam("1.FC Union Berlin");
-//        redis.getTeamNameId("Borussia Dortmund");
-//        redis.getTeamNameId("Borussia Mönchengladbach");
-//        redis.getTeamNameId("CFC Genua 1893");
-
 
 //        extractData.extractTeams();
 
@@ -71,13 +64,9 @@ public class InitBean implements InitializingBean {
 //    createData.improveDataQuality();
 
 
-//        Tools.getAllFilesFromDir("/home/bkk/gluex/pdf")
-//                .forEach(f -> {
-//                    System.out.println(f.getFileName());
-//                    pdf.scanGluexPDF(f);
-//                });
+//        pdf.scanAllGluexPDFinDir();
 
-        csv.readCsv();
+//        csv.parseSide10FromGluex();
     }
 
 }

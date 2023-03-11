@@ -19,14 +19,14 @@ public class ExtractData {
     }
 
     private void fillTeamMap() {
-        strMap.put("CFC Genua 1893", "TEAM_Genoa");
+        strMap.put("CFC Genua 1893", "TEAM-Genoa");
     }
 
     public void extractTeams() {
         Set<String> allTeamNames = getAllTeamsFromGluex();
         AtomicInteger atomInt = new AtomicInteger(0);
         allTeamNames.forEach(s -> {
-            String key = "TEAM_GLUEX_" + s.replace(" ", "_");
+            String key = "TEAMGLUEX_" + s.replace(" ", "_");
             redis.write(key, String.valueOf(atomInt.addAndGet(1)));
             System.out.println(key);
         });
