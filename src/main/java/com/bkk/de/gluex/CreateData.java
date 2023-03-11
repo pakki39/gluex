@@ -59,6 +59,7 @@ public class CreateData {
         addStandings(key, redisStr);
         addBetQuotes(key, redisStr);
         addLastGames(key, redisStr);
+        addTrend(key, redisStr);
     }
 
 
@@ -129,30 +130,29 @@ public class CreateData {
             String[] strSplit = result.split(",");
             String[] lastGamesStrArray = Arrays.copyOfRange(strSplit, 4, 7);
             Arrays.stream(lastGamesStrArray)
-                            .forEach(s -> {
-                                if(s.trim().equals("-")) {
-                                    addResultStr(key, "1");
-                                    addResultStr(key, "1");
-                                } else {
-                                    String[] resArray = s.split(":");
-                                    if(resArray[0].trim().equals("0")) {
-                                        addResultStr(key, "10");
-                                    } else {
-                                        addResultStr(key, String.valueOf(Integer.valueOf(resArray[0])*100));
-                                    }
-                                    if(resArray[1].trim().equals("0")) {
-                                        addResultStr(key, "10");
-                                    } else {
-                                        addResultStr(key, String.valueOf(Integer.valueOf(resArray[1])*100));
-                                    }
+                    .forEach(s -> {
+                        if (s.trim().equals("-")) {
+                            addResultStr(key, "1");
+                            addResultStr(key, "1");
+                        } else {
+                            String[] resArray = s.split(":");
+                            if (resArray[0].trim().equals("0")) {
+                                addResultStr(key, "10");
+                            } else {
+                                addResultStr(key, String.valueOf(Integer.valueOf(resArray[0]) * 100));
+                            }
+                            if (resArray[1].trim().equals("0")) {
+                                addResultStr(key, "10");
+                            } else {
+                                addResultStr(key, String.valueOf(Integer.valueOf(resArray[1]) * 100));
+                            }
 
 
-                                }
-                            });
+                        }
+                    });
         } catch (NumberFormatException e) {
             throw new RuntimeException(e);
         }
-
     }
 
     private void addStandings(String key, String str) {
@@ -197,6 +197,24 @@ public class CreateData {
             throw new RuntimeException(e);
         }
 
+    }
+
+    private void addTrend(String key, String result) {
+        String trendStr;
+        try {
+            String[] strSplit = result.split(",");
+            String[] trendStrArray = Arrays.copyOfRange(strSplit, 7, 8);
+            Arrays.stream(trendStrArray)
+                    .forEach(s -> {
+                        s.chars().forEach(c -> {
+                        addResultStr(key, GluexTrend.valueOfTrend(char(c)).toString());
+                        });
+
+
+                    });
+        } catch (NumberFormatException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     private void addScoreStringBuilder(String str, StringBuilder stringBuilder) {
@@ -254,5 +272,35 @@ public class CreateData {
             System.out.println("Key: " + key + " deleted!");
         }
     }
+
+    public enum GluexTrend {
+        N("100"),
+        n("200"),
+        S("300"),
+        s("400"),
+        U("500"),
+        u("600");
+
+        private static final Map<String, GluexTrend> BY_VALUE = new HashMap<>();
+
+        static {
+            for (GluexTrend e : values()) {
+                BY_VALUE.put(e.value, e);
+            }
+        }
+
+        public final String value;
+
+        private GluexTrend(String label) {
+            this.value = label;
+        }
+
+        public static GluexTrend valueOfTrend(String value) {
+            return BY_VALUE.get(value);
+        }
+
+
+    }
+
 
 }
